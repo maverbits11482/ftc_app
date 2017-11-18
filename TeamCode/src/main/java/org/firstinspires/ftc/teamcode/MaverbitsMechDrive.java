@@ -42,13 +42,13 @@ public class MaverbitsMechDrive extends OpMode
 
         // Find angle off y axis.
         //driveAngle = -Math.toDegrees(Math.atan2(leftX, leftY));
-        driveAngle = Math.atan2(leftX, leftY);
+        driveAngle = Math.atan2(-leftX, leftY);
 
 
         // Find magnitude of power.
         drivePower = Math.hypot(-leftX, leftY);
 
-        turnPower = -gamepad1.right_stick_x;
+        turnPower = gamepad1.right_stick_x;
 
 
 
