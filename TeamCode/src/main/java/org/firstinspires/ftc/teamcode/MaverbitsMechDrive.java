@@ -20,14 +20,14 @@ public class MaverbitsMechDrive extends OpMode
     double leftX;
 
 
-    // mavBot represents our roboot.
+    // mavBot represents our robot.
     MavBot mavBot;
 
     @Override
     public void init()
     {
         // Create a new instance of MavBot.
-        mavBot = new MavBot(hardwareMap);
+        mavBot = new MavBot(hardwareMap, this);
 
         // Prompt user to push start button
         telemetry.addData(">>","Press start to begin");
@@ -51,6 +51,7 @@ public class MaverbitsMechDrive extends OpMode
         turnPower = gamepad1.right_stick_x;
 
 
+        mavBot.armControl(gamepad1, telemetry);
 
 
 
