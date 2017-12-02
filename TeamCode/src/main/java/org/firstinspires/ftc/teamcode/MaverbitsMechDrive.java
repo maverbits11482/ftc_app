@@ -51,7 +51,7 @@ public class MaverbitsMechDrive extends OpMode
         turnPower = gamepad1.right_stick_x;
 
 
-        mavBot.armControl(gamepad1, telemetry);
+        mavBot.armControl(gamepad2, telemetry);
 
 
 

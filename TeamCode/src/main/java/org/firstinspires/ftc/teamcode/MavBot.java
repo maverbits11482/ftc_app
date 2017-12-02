@@ -16,6 +16,9 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 import static android.R.attr.right;
 import static android.R.attr.x;
 import static java.lang.Runtime.getRuntime;
+import static org.firstinspires.ftc.teamcode.MavBot.clawPosition.STATE_CLOSED;
+import static org.firstinspires.ftc.teamcode.MavBot.clawPosition.STATE_OPEN;
+import static org.firstinspires.ftc.teamcode.MavBot.clawPosition.STATE_STORAGE;
 import static org.firstinspires.ftc.teamcode.MaverbitsTeleOp.ARM_POWER;
 
 
@@ -33,7 +36,12 @@ public class MavBot
     private boolean rBumpPressed;
     private boolean lBumpPressed;
 
+    private boolean aPressed;
+    private boolean yPressed;
+
     private double armStartTime;
+    private double gripperStartTime;
+    private double gripperElapsedTime;
     private double startTime;
     private double currTime;
     private double armElapsedTime;
@@ -41,17 +49,27 @@ public class MavBot
 
     public static final double changeTime = .025;
     private double distance = .3;
+    private double gripperDistance = .75;
 
     public double clawStartPos = .3;
     public double clawEndPos = 1;
     public double clawTime = .75;
     private double velocity;
 
+    public double gripperStartPos = .75;
+    public double gripperEndPos = 0;
+    public double gripperTime = 1;
+    private double gripperVelocity;
+
     public double armStartPos = 0;
     public double armEndPos = 1100;
     public double armTime = 2;
     private double armVelocity;
     private double armDistance = 0;
+
+    private static final double CLAW_CLOSED_POSITION = .93;
+    private static final double CLAW_OPEN_POSITION = .75;
+    private static final double CLAW_STORAGE_POSITION = .3;
 
     private HardwareMap hardwareMap;
     // Motors
@@ -62,12 +80,14 @@ public class MavBot
     public DcMotor motorArm;
     public Servo leftClaw;
     public Servo rightClaw;
+    public Servo gripper;
+
 
     boolean firstIteration;
 
     private  int armTarget;
 
-    private enum clawPosition
+    public enum clawPosition
     {
 
         STATE_STORAGE,
@@ -92,6 +112,8 @@ public class MavBot
         motorArm = hardwareMap.dcMotor.get("arm");
         leftClaw = hardwareMap.servo.get("leftClaw");
         rightClaw = hardwareMap.servo.get("rightClaw");
+
+        gripper = hardwareMap.servo.get("relicClaw");
 
         rightClaw.setDirection(Servo.Direction.REVERSE);
 
@@ -125,14 +147,25 @@ public class MavBot
         rBumpPressed = false;
         lBumpPressed = false;
 
+        aPressed = false;
+        yPressed = false;
+
         upPressed = false;
         downPressed = false;
 
         startTime = opMode.getRuntime();
+        armStartTime = opMode.getRuntime();
+        gripperStartTime = opMode.getRuntime();
 
         velocity = (clawEndPos - clawStartPos) / clawTime;
         armVelocity = (armEndPos - armStartPos) / armTime;
+        gripperVelocity = (gripperStartPos - gripperEndPos) / gripperTime;
 
+        currClawPosition = STATE_STORAGE;
+
+        adjustClaw();
+
+        gripper.setPosition(gripperDistance);
         leftClaw.setPosition(distance);
         rightClaw.setPosition(distance);
 
@@ -141,7 +174,7 @@ public class MavBot
         firstIteration = true;
 
         // Adjust position of claw to the current state.
-        adjustClaw();
+
 
     }
 
@@ -196,10 +229,18 @@ public class MavBot
         currTime = opMode.getRuntime();
 
         elapsedTime = currTime - startTime;
+        gripperElapsedTime = currTime - gripperStartTime;
         telemetry.addData("Claw Elapsed", elapsedTime);
         telemetry.addData("Arm Elapsed", armElapsedTime);
         armElapsedTime = currTime - armStartTime;
 
+        if(gamepad.x) {
+            currClawPosition = currClawPosition.STATE_OPEN;
+            adjustClaw();
+        } else if (gamepad.b) {
+            currClawPosition = currClawPosition.STATE_CLOSED;
+            adjustClaw();
+        }
         if(gamepad.right_bumper)
         {
             if(rBumpPressed == false) {
@@ -383,8 +424,104 @@ public class MavBot
             }
         }
 
+        if(gamepad.y)
+        {
+            if(yPressed == false) {
+                yPressed = true;
+
+                gripperStartTime = currTime;
+
+
+                RobotLog.vv("Y", "Button Just Pressed");
+            }
+            else
+            {
+                if(gripperElapsedTime >= changeTime)
+                {
+                    if(gripperDistance < .75)
+                    {
+                        gripperDistance = gripperDistance + (gripperElapsedTime * gripperVelocity);
+
+                        gripperStartTime = currTime;
+                    }
+                    else
+                    {
+
+                    }
+                }
+                else
+                {
+
+                }
+
+            }
+
+        }
+        else if(!gamepad.y)
+        {
+            if(yPressed == true)
+            {
+                yPressed = false;
+
+                RobotLog.vv("Y", "Button just Released");
+            }
+            else
+            {
+
+            }
+        }
+
+        if(gamepad.a)
+        {
+            if(aPressed == false) {
+                aPressed = true;
+
+                gripperStartTime = currTime;
+
+
+                RobotLog.vv("A", "Button Just Pressed");
+            }
+            else
+            {
+                if(gripperElapsedTime >= changeTime)
+                {
+                    if(gripperDistance > 0)
+                    {
+                        gripperDistance = gripperDistance - (gripperElapsedTime * gripperVelocity);
+
+                        gripperStartTime = currTime;
+                    }
+                    else
+                    {
+
+                    }
+                }
+                else
+                {
+
+                }
+
+            }
+
+        }
+        else if(!gamepad.a)
+        {
+
+            if(aPressed == true)
+            {
+                aPressed = false;
+
+                RobotLog.vv("A", "Button just Released");
+            }
+            else
+            {
+
+            }
+        }
+
         telemetry.addData("ArmDistance", armDistance);
 
+        gripper.setPosition(gripperDistance);
         motorArm.setTargetPosition((int) armDistance);
         leftClaw.setPosition(distance);
         rightClaw.setPosition(distance);
@@ -397,16 +534,13 @@ public class MavBot
         switch(currClawPosition)
         {
             case STATE_STORAGE:
-                leftClaw.setPosition(.2);
-                rightClaw.setPosition(.2);
+                distance = CLAW_STORAGE_POSITION;
                 break;
             case STATE_CLOSED:
-                leftClaw.setPosition(.93);
-                rightClaw.setPosition(.93);
+                distance = CLAW_CLOSED_POSITION;
                 break;
             case STATE_OPEN:
-                leftClaw.setPosition(.75);
-                rightClaw.setPosition(.75);
+                distance = CLAW_OPEN_POSITION;
                 break;
         }
 
