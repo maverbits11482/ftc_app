@@ -3,6 +3,8 @@ package org.firstinspires.ftc.teamcode;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+
 /**
  * Created by Henry on 11/11/2017.
  */
@@ -11,6 +13,8 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 public class ThreeBotDrive extends OpMode
 {
 
+    enum LIFTER_STATE {MANUAL_MODE, AUTO_LIFT, AUTO_DESCEND}
+
     ThreeBot threeBot;
 
     double left;
@@ -18,16 +22,61 @@ public class ThreeBotDrive extends OpMode
     double drive;
     double turn;
     double max;
+    boolean wantsRaise = false;
+
+    double liftPower = 1;
 
     double sideways;
+
+    LIFTER_STATE lifterState;
 
     @Override
     public void init()
     {
         threeBot = new ThreeBot(hardwareMap, this);
 
+        lifterState = LIFTER_STATE.MANUAL_MODE;
+
         // Prompt user to push start button
+        threeBot.activateShovel(telemetry);
         telemetry.addData(">>","Press start to begin");
+    }
+
+    private void adjustLifter() {
+        if(gamepad2.y && !threeBot.isLifted())
+        {
+            // put it in auto descend mode.
+            lifterState = LIFTER_STATE.AUTO_LIFT;
+        }
+        else if(gamepad2.dpad_up)
+        {
+            lifterState = LIFTER_STATE.MANUAL_MODE;
+            threeBot.raiseLifter(liftPower);
+        } else if (gamepad2.dpad_down)
+        {
+            lifterState = LIFTER_STATE.MANUAL_MODE;
+            threeBot.lowerLifter(liftPower);
+        } else if (lifterState == LIFTER_STATE.MANUAL_MODE)
+        {
+            threeBot.stopLifter();
+        }
+
+        // do we need to autolift the arm?
+        if (lifterState == LIFTER_STATE.AUTO_LIFT) {
+            if(threeBot.isLifted()) {
+                threeBot.stopLifter();
+            } else {
+                // we want to lower the lifter which raises the robot.
+                threeBot.raiseLifter(liftPower);
+            }
+        } else if (lifterState == LIFTER_STATE.AUTO_DESCEND) {
+            if (threeBot.isDescended()) {
+                threeBot.stopLifter();
+            } else {
+                // we want to raise the lifter which lowers the robot (descends).
+                threeBot.raiseLifter(liftPower);
+            }
+        }
     }
 
     @Override
@@ -57,9 +106,26 @@ public class ThreeBotDrive extends OpMode
         // drive.
         threeBot.driveBot(left, right, sideways);
 
+        // adjust lifter
+        adjustLifter();
+
+        telemetry.addData("Red Hue", threeBot.lightSensor.red());
+        telemetry.addData("isLifted", threeBot.isLifted());
+
+
+        if(gamepad1.left_trigger > .5)
+            threeBot.harvesterIn();
+        else if(gamepad1.right_trigger > .5)
+            threeBot.harvesterOut();
+        else
+            threeBot.motorShovel.setPower(0);
+            telemetry.addData("Harvester Status:", "Not active");
+
+
         telemetry.addData("left", "%.02f", threeBot.motorLeft.getPower());
         telemetry.addData("right", "%.02f", threeBot.motorLeft.getPower());
         telemetry.addData("center", "%.02f", threeBot.motorLeft.getPower());
-
+        telemetry.addData("distance from ground", threeBot.distanceSensor.getDistance(DistanceUnit.INCH));
+        telemetry.update();
     }
 }
