@@ -99,12 +99,12 @@ public class HenryAutonomousTest extends LinearOpMode
 
         }
         threeBot.motorLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        threeBot.motorLeft.setTargetPosition(-450);
+        threeBot.motorLeft.setTargetPosition(-550);
         threeBot.motorRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        threeBot.motorRight.setTargetPosition(-450);
+        threeBot.motorRight.setTargetPosition(-550);
 
-        threeBot.motorLeft.setPower(.4);
-        threeBot.motorRight.setPower(.4);
+        threeBot.motorLeft.setPower(.3);
+        threeBot.motorRight.setPower(.3);
 
         while(opModeIsActive() && threeBot.motorLeft.isBusy())
         {
@@ -157,7 +157,7 @@ public class HenryAutonomousTest extends LinearOpMode
         }
 
 
-        driveForward(.6, 4000);
+        driveForward(.5, 4000);
         while(threeBot.motorLeft.isBusy() && opModeIsActive())
         {
             telemetry.addData("Status:", "Moving to position");
@@ -194,7 +194,7 @@ public class HenryAutonomousTest extends LinearOpMode
                     {
                         if (recognition.getLabel().equals(LABEL_GOLD_MINERAL))
                         {
-                            if(recognition.getLeft() > 300)
+                            if(recognition.getLeft() > 350)
                                 bVal = true;
                         }
                     }
