@@ -110,7 +110,7 @@ public class ThreeBot
     }
 
     public boolean isDescended() {
-        if(distanceSensor.getDistance(DistanceUnit.INCH) < 3.5)
+        if(distanceSensor.getDistance(DistanceUnit.INCH) < 3.45)
             return true;
         else
             return false;

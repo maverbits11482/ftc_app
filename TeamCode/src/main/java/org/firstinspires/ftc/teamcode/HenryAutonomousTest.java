@@ -14,7 +14,7 @@ import org.firstinspires.ftc.robotcore.external.tfod.TFObjectDetector;
 
 import java.util.List;
 
-@Autonomous
+@Autonomous(name = "ThreeBot Autonomous:Facing Crater", group = "MavAutonomous")
 public class HenryAutonomousTest extends LinearOpMode
 {
 
@@ -157,7 +157,7 @@ public class HenryAutonomousTest extends LinearOpMode
         }
 
 
-        driveForward(.5, 4000);
+        driveForward(.3, 4100);
         while(threeBot.motorLeft.isBusy() && opModeIsActive())
         {
             telemetry.addData("Status:", "Moving to position");
