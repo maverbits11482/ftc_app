@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
+import com.qualcomm.hardware.bosch.BNO055IMU;
+import com.qualcomm.hardware.bosch.JustLoggingAccelerationIntegrator;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -8,13 +10,17 @@ import com.qualcomm.robotcore.util.RobotLog;
 
 import org.firstinspires.ftc.robotcore.external.ClassFactory;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
+import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
+import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
 import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
 import org.firstinspires.ftc.robotcore.external.tfod.TFObjectDetector;
 
 import java.util.List;
 
-@Autonomous(name = "ThreeBot Autonomous:Facing Crater", group = "MavAutonomous")
+@Autonomous(name = "ThreeBot Autonomous:On Crater Side", group = "MavAutonomous")
 public class HenryAutonomousTest extends LinearOpMode
 {
 
@@ -25,6 +31,8 @@ public class HenryAutonomousTest extends LinearOpMode
     private double turningMotorPower = 0;
     private int width = 800;
     private boolean bFound;
+    int goldMineralPos;
+    BNO055IMU imu;
 
     final String VUFORIA_KEY = "AZqzp2L/////AAABmTYabB3IUER1vH8QW3FbJWYLgZjQuhIZP5ZAfYspmP7lu1xeiz6QuZLyIJY2trWKk4zGUwjUHBdUPAMWcbJYe4eYGHhxOOB9BshLvmc6i0G7xRkGTyVfNkfy/x4xvxJH8cCuhWRv9z7YyonDiBJQIJdpAl2g8jVKfC9jxt+2pNGpCavvr4syo1fF7nJlU0kM50Ohrkffp+djiSVV0P/cnBnt/ebAiWAHMs0QgiMBVQiA+8+0Wg8Pcy/8jJ/0kJ4mQAM5WJ3rqk1iam5gvyPM2zuGFahcJLNdClKY1/TTri3gsQc2Hr7LdXyxth7rX2jt3xBeRShr7xc4VsZv58H4dNNG7M6cxjm5FQQWyarjW8gB";
 
@@ -125,6 +133,8 @@ public class HenryAutonomousTest extends LinearOpMode
         threeBot.motorLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         threeBot.motorRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
+        initIMU();
+
         if (opModeIsActive()) {
             /** Activate Tensor Flow Object Detection. */
             if (tfod != null) {
@@ -154,6 +164,7 @@ public class HenryAutonomousTest extends LinearOpMode
                 telemetry.addData("Status", "Didn't find block");
             }
             telemetry.update();
+
         }
 
 
@@ -167,6 +178,7 @@ public class HenryAutonomousTest extends LinearOpMode
         if (tfod != null) {
             tfod.shutdown();
         }
+
 
 
         telemetry.update();
@@ -185,7 +197,10 @@ public class HenryAutonomousTest extends LinearOpMode
         if (tfod != null) {
             // getUpdatedRecognitions() will return null if no new information is available since
             // the last time that call was made.
+
             List<Recognition> updatedRecognitions = tfod.getUpdatedRecognitions();
+            Orientation Angle = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+            double headerAngle = AngleUnit.DEGREES.normalize(Angle.firstAngle);
             if (updatedRecognitions != null)
             {
                 if (updatedRecognitions.size() > 0)
@@ -216,6 +231,14 @@ public class HenryAutonomousTest extends LinearOpMode
         threeBot.motorLeft.setPower(power);
         threeBot.motorRight.setPower(power);
     }
+    public void resetIMU()
+    {
+
+    }
+    public void getAngle()
+    {
+
+    }
 
     private void initVuforia()
     {
@@ -238,6 +261,17 @@ public class HenryAutonomousTest extends LinearOpMode
         TFObjectDetector.Parameters tfodParameters = new TFObjectDetector.Parameters(tfodMonitorViewId);
         tfod = ClassFactory.getInstance().createTFObjectDetector(tfodParameters, vuforia);
         tfod.loadModelFromAsset(TFOD_MODEL_ASSET, LABEL_GOLD_MINERAL, LABEL_SILVER_MINERAL);
+    }
+    public void initIMU() {
+        BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
+        parameters.angleUnit           = BNO055IMU.AngleUnit.DEGREES;
+        parameters.accelUnit           = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
+        parameters.calibrationDataFile = "BNO055IMUCalibration.json"; // see the calibration sample opmode
+        parameters.loggingEnabled      = false;
+        parameters.loggingTag          = "IMU";
+        parameters.accelerationIntegrationAlgorithm = new JustLoggingAccelerationIntegrator();
+        imu = hardwareMap.get(BNO055IMU.class, "imu");
+        imu.initialize(parameters);
     }
 
 }

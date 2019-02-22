@@ -114,9 +114,9 @@ public class ThreeBotDrive extends OpMode
 
 
         if(gamepad1.left_trigger > .5)
-            threeBot.harvesterIn();
+            threeBot.harvesterIn(.7);
         else if(gamepad1.right_trigger > .5)
-            threeBot.harvesterOut();
+            threeBot.harvesterOut(.7);
         else
             threeBot.motorShovel.setPower(0);
             telemetry.addData("Harvester Status:", "Not active");

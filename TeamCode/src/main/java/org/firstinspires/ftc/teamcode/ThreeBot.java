@@ -117,13 +117,28 @@ public class ThreeBot
     }
 
 
-    public void harvesterIn()
+    public void autoHarvesterIn(double power, int distance)
     {
-        motorShovel.setPower(.7);
+        motorShovel.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        motorShovel.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        motorShovel.setTargetPosition(distance);
+        motorShovel.setPower(power);
     }
-    public void harvesterOut()
+    public void autoHarvesterOut(double power, int distance)
     {
-        motorShovel.setPower(-.7);
+        motorShovel.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        motorShovel.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        motorShovel.setTargetPosition(distance);
+        motorShovel.setPower(power);
+    }
+
+    public void harvesterIn(double power)
+    {
+        motorShovel.setPower(power);
+    }
+    public void harvesterOut(double power)
+    {
+        motorShovel.setPower(-power);
     }
 
 

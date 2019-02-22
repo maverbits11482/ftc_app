@@ -209,19 +209,25 @@ public class HenryAutonomousMarker extends LinearOpMode
             RobotLog.vv("HCE",  "Position: is Right");
             position = "Right";
             turnLeft(.3, 500);
-            driveForward(.5,600);
+            driveForward(.5,700);
             threeBot.motorLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
             threeBot.motorRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            turnLeft(.3, 400);
+            turnLeft(.3, 350);
             driveForward(.5, 2000);
-            threeBot.harvesterIn();
+          threeBot.harvesterOut(.4);
+          threeBot.harvesterIn(.4);
+//            threeBot.autoHarvesterOut(.4, 200);
+//            threeBot.autoHarvesterOut(.4, -200);
         }
         else if(isCenter())
         {
             RobotLog.vv("HCE",  "Position: is Center");
             position = "Center";
-            driveForward(.3,2000);
-            threeBot.harvesterIn();
+            driveForward(.3,2500);
+            threeBot.harvesterOut(.4);
+            threeBot.harvesterIn(.4);
+//            threeBot.autoHarvesterOut(.4, 200);
+//            threeBot.autoHarvesterOut(.4, -200);
         }
         else if(isLeft())
         {
@@ -244,7 +250,10 @@ public class HenryAutonomousMarker extends LinearOpMode
             threeBot.motorRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
             turnLeft(.3, -400);
             driveForward(.5, 2000);
-            threeBot.harvesterIn();
+            threeBot.harvesterOut(.4);
+            threeBot.harvesterIn(.4);
+//            threeBot.autoHarvesterOut(.4, 200);
+//            threeBot.autoHarvesterOut(.4, -200);
         }
         else
         {
@@ -281,15 +290,17 @@ public class HenryAutonomousMarker extends LinearOpMode
             // getUpdatedRecognitions() will return null if no new information is available since
             // the last time that call was made.
             List<Recognition> updatedRecognitions = tfod.getUpdatedRecognitions();
+            Orientation Angle = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+            double headerAngle = AngleUnit.DEGREES.normalize(Angle.firstAngle);
             if (updatedRecognitions != null)
             {
                 if (updatedRecognitions.size() > 0)
                 {
                     for (Recognition recognition : updatedRecognitions)
                     {
-                        if (recognition.getLabel().equals(LABEL_GOLD_MINERAL))
+                        if (recognition.getLabel().equals(LABEL_GOLD_MINERAL) && headerAngle > 40)
                         {
-                            if(recognition.getLeft() > 350)
+                            if(recognition.getLeft() > 350 )
                                 bVal = true;
                         }
                     }
@@ -361,8 +372,10 @@ public class HenryAutonomousMarker extends LinearOpMode
         int tfodMonitorViewId = hardwareMap.appContext.getResources().getIdentifier(
                 "tfodMonitorViewId", "id", hardwareMap.appContext.getPackageName());
         TFObjectDetector.Parameters tfodParameters = new TFObjectDetector.Parameters(tfodMonitorViewId);
+        tfodParameters.minimumConfidence = 0.75;
         tfod = ClassFactory.getInstance().createTFObjectDetector(tfodParameters, vuforia);
         tfod.loadModelFromAsset(TFOD_MODEL_ASSET, LABEL_GOLD_MINERAL, LABEL_SILVER_MINERAL);
+
     }
 
     public void initIMU() {

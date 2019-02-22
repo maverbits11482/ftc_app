@@ -15,6 +15,7 @@ import org.firstinspires.ftc.robotcore.external.tfod.TFObjectDetector;
 
 import java.util.List;
 
+@Disabled
 @Autonomous(name = "Henry Concept: TensorFlow Object Detection", group = "Concept")
 public class HenryConceptTensorFlowObjectDetection extends LinearOpMode {
     private static final String TFOD_MODEL_ASSET = "RoverRuckus.tflite";
